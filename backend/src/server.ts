@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import healthRouter from "./routes/health.routes";
+import userRouter from "./routes/user.routes";
 import { connectDatabase } from "./config/database";
 
 dotenv.config();
@@ -25,7 +26,9 @@ app.get("/", (req, res) => {
 
 app.use("/api/health", healthRouter);
 
-// Connect to database and start server
+app.use("/api/users", userRouter);
+
+// Start server
 async function startServer() {
   await connectDatabase();
 
