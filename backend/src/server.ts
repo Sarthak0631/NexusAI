@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import healthRouter from "./routes/health.routes";
 import userRouter from "./routes/user.routes";
 import authRouter from "./routes/auth.routes";
+import documentRouter from "./routes/document.routes";
 
 import { connectDatabase } from "./config/database";
 
@@ -40,6 +41,11 @@ app.use("/api/health", healthRouter);
 app.use("/api/users", userRouter);
 
 app.use("/api/auth", authRouter);
+
+app.use(
+  "/api/documents",
+  documentRouter
+);
 
 // Start server
 async function startServer() {
