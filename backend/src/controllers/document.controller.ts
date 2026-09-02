@@ -113,3 +113,86 @@ if (isTXT) {
     });
   }
 }
+
+export async function getDocuments(
+  req: AuthRequest,
+  res: Response
+) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const documents = await DocumentModel.find({
+      userId: req.userId,
+    })
+      .select(
+        "-extractedText"
+      )
+      .sort({
+        createdAt: -1,
+      });
+
+    return res.status(200).json({
+      success: true,
+      documents,
+    });
+  } catch (error) {
+    console.error(
+      "Get documents error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch documents",
+    });
+  }
+}
+
+export async function deleteDocument(
+  req: AuthRequest,
+  res: Response
+) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const { id } = req.params;
+
+    const document =
+      await DocumentModel.findOneAndDelete({
+        _id: id,
+        userId: req.userId,
+      });
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Document deleted successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Delete document error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete document",
+    });
+  }
+}

@@ -1,12 +1,14 @@
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 import healthRouter from "./routes/health.routes";
 import userRouter from "./routes/user.routes";
 import authRouter from "./routes/auth.routes";
 import documentRouter from "./routes/document.routes";
+import chatRouter from "./routes/chat.routes";
+import embeddingRouter from "./routes/embedding.routes";
 
 import { connectDatabase } from "./config/database";
 
@@ -46,6 +48,13 @@ app.use(
   "/api/documents",
   documentRouter
 );
+
+app.use(
+  "/api/chat",
+  chatRouter
+);
+
+app.use("/api/embeddings", embeddingRouter);
 
 // Start server
 async function startServer() {
