@@ -9,6 +9,7 @@ import authRouter from "./routes/auth.routes";
 import documentRouter from "./routes/document.routes";
 import chatRouter from "./routes/chat.routes";
 import embeddingRouter from "./routes/embedding.routes";
+import pineconeRouter from "./routes/pinecone.routes";
 
 import { connectDatabase } from "./config/database";
 
@@ -55,6 +56,8 @@ app.use(
 );
 
 app.use("/api/embeddings", embeddingRouter);
+
+app.use("/api/pinecone", pineconeRouter);
 
 // Start server
 async function startServer() {
