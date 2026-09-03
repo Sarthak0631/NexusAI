@@ -1,5 +1,10 @@
 import dotenv from "dotenv";
-import Groq from "groq-sdk";
+import { ChatGroq } from "@langchain/groq";
+import {
+  SystemMessage,
+  HumanMessage,
+  AIMessage,
+} from "@langchain/core/messages";
 
 dotenv.config();
 
@@ -9,7 +14,9 @@ if (!apiKey) {
   throw new Error("GROQ_API_KEY is missing from backend/.env");
 }
 
-const groq = new Groq({
+const llm = new ChatGroq({
+  model: "openai/gpt-oss-20b",
+  temperature: 0.7,
   apiKey,
 });
 
@@ -18,15 +25,30 @@ export interface ChatMessage {
   content: string;
 }
 
-export async function generateAIResponse(messages: ChatMessage[]) {
-  const response = await groq.chat.completions.create({
-    model: "openai/gpt-oss-20b",
-    messages,
-    temperature: 0.7,
+export async function generateAIResponse(
+  messages: ChatMessage[]
+) {
+  const langChainMessages = messages.map((message) => {
+    switch (message.role) {
+      case "system":
+        return new SystemMessage(message.content);
+
+      case "user":
+        return new HumanMessage(message.content);
+
+      case "assistant":
+        return new AIMessage(message.content);
+    }
   });
 
+  const response = await llm.invoke(langChainMessages);
+
   return {
-    content: response.choices[0]?.message?.content ?? "",
-    usage: response.usage,
+    content:
+      typeof response.content === "string"
+        ? response.content
+        : JSON.stringify(response.content),
+
+    usage: response.usage_metadata,
   };
 }

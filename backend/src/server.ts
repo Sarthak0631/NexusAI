@@ -10,6 +10,13 @@ import documentRouter from "./routes/document.routes";
 import chatRouter from "./routes/chat.routes";
 import embeddingRouter from "./routes/embedding.routes";
 import pineconeRouter from "./routes/pinecone.routes";
+import chunkingRouter from "./routes/chunking.routes";
+import retrievalRouter from "./routes/retrieval.routes";
+import ragRouter from "./routes/rag.routes";
+import ragChainRouter from "./routes/rag-chain.routes";
+import langGraphRouter from "./routes/langgraph.routes";
+import agentRouter from "./routes/agent.routes";
+import multiAgentRouter from "./routes/multi-agent.routes";
 
 import { connectDatabase } from "./config/database";
 
@@ -58,6 +65,29 @@ app.use(
 app.use("/api/embeddings", embeddingRouter);
 
 app.use("/api/pinecone", pineconeRouter);
+
+app.use("/api/chunks", chunkingRouter);
+
+app.use("/api/retrieval", retrievalRouter);
+
+app.use("/api/rag", ragRouter);
+
+app.use("/api/rag-chain", ragChainRouter);
+
+app.use(
+  "/api/langgraph",
+  langGraphRouter
+);
+
+app.use(
+  "/api/agent",
+  agentRouter
+);
+
+app.use(
+  "/api/multi-agent",
+  multiAgentRouter
+);
 
 // Start server
 async function startServer() {
