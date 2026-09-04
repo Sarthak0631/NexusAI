@@ -1,9 +1,20 @@
-import { Response } from "express";
+import {
+  Request,
+  Response,
+} from "express";
 import { PDFParse } from "pdf-parse";
+import mongoose from "mongoose";
 
 import DocumentModel from "../models/Document";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { ingestDocument } from "../services/ingestion.service";
+
+interface AuthenticatedRequest
+  extends Request<{
+    id: string;
+  }> {
+  userId?: string;
+}
 
 export async function uploadDocument(
   req: AuthRequest,
@@ -116,30 +127,68 @@ export async function uploadDocument(
 }
 
 export async function getDocuments(
-  req: AuthRequest,
+  req: Request,
   res: Response
 ) {
   try {
-    if (!req.userId) {
+    const userId =
+      req.userId;
+
+    if (!userId) {
       return res.status(401).json({
         success: false,
-        message: "Authentication required",
+        message: "Unauthorized",
       });
     }
 
-    const documents = await DocumentModel.find({
-      userId: req.userId,
-    })
-      .select(
-        "-extractedText"
-      )
-      .sort({
-        createdAt: -1,
-      });
+    const page = Math.max(
+      Number(req.query.page) || 1,
+      1
+    );
+
+    const limit = Math.min(
+      Math.max(
+        Number(req.query.limit) || 20,
+        1
+      ),
+      50
+    );
+
+    const skip =
+      (page - 1) * limit;
+
+    const [
+      documents,
+      total,
+    ] = await Promise.all([
+      DocumentModel.find({
+        userId,
+      })
+        .select("-extractedText")
+        .sort({
+          createdAt: -1,
+        })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      DocumentModel.countDocuments({
+        userId,
+      }),
+    ]);
 
     return res.status(200).json({
       success: true,
       documents,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages:
+          Math.ceil(
+            total / limit
+          ),
+      },
     });
   } catch (error) {
     console.error(
@@ -149,7 +198,8 @@ export async function getDocuments(
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch documents",
+      message:
+        "Failed to fetch documents",
     });
   }
 }
@@ -194,6 +244,69 @@ export async function deleteDocument(
     return res.status(500).json({
       success: false,
       message: "Failed to delete document",
+    });
+  }
+}
+
+export async function getDocumentById(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const documentId =
+      String(req.params.id);
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        documentId
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid document ID",
+      });
+    }
+
+    const document =
+      await DocumentModel.findOne({
+        _id: documentId,
+        userId,
+      }).select(
+        "_id originalName name mimeType size status extractedText createdAt"
+      );
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Document not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      document,
+    });
+  } catch (error) {
+    console.error(
+      "Get document error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to fetch document",
     });
   }
 }

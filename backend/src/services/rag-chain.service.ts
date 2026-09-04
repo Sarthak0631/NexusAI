@@ -2,7 +2,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { RunnableSequence } from "@langchain/core/runnables";
 
-import { retrieveRelevantChunks } from "./retrieval.service";
+import { retrieveAndRerankChunks } from "./retrieval.service";
 import { generateAIResponse } from "./llm.service";
 
 const ragPrompt = ChatPromptTemplate.fromMessages([
@@ -56,10 +56,11 @@ export async function generateLangChainRAGResponse(
   question: string,
   userId: string
 ) {
-  const relevantChunks = await retrieveRelevantChunks(
+  const relevantChunks = await retrieveAndRerankChunks(
     question,
     userId,
-    5
+    10,
+    3
   );
 
   if (relevantChunks.length === 0) {

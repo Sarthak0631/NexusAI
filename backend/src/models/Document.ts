@@ -62,6 +62,11 @@ const documentSchema = new Schema<IDocument>(
   }
 );
 
+documentSchema.index({
+  userId: 1,
+  createdAt: -1,
+});
+
 const DocumentModel =
   mongoose.model<IDocument>(
     "Document",

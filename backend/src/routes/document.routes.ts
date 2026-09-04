@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   uploadDocument,
   getDocuments,
+  getDocumentById,
   deleteDocument,
 } from "../controllers/document.controller";
 
@@ -27,6 +28,13 @@ router.get(
   "/",
   authenticate,
   getDocuments
+);
+
+
+router.get(
+  "/:id",
+  authenticate,
+  getDocumentById
 );
 
 

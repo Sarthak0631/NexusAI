@@ -1,7 +1,9 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 
-import { retrieveRelevantChunks } from "./retrieval.service";
+import {
+  retrieveAndRerankChunks,
+} from "./retrieval.service";
 
 export function createDocumentSearchTool(userId: string) {
   return tool(
@@ -10,11 +12,13 @@ export function createDocumentSearchTool(userId: string) {
         "Agent Tool: Searching documents..."
       );
 
-      const chunks = await retrieveRelevantChunks(
-        query,
-        userId,
-        5
-      );
+      const chunks =
+        await retrieveAndRerankChunks(
+          query,
+          userId,
+          10,
+          5
+        );
 
       if (chunks.length === 0) {
         return "No relevant information was found in the uploaded documents.";

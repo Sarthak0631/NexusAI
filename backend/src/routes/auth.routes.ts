@@ -1,6 +1,10 @@
 import { Router } from "express";
 
 import {
+  authRateLimiter,
+} from "../middleware/rate-limit.middleware";
+
+import {
   register,
   login,
   logout,
@@ -11,9 +15,9 @@ import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/logout", logout);
+router.post("/register", authRateLimiter, register);
+router.post("/login", authRateLimiter, login);
+router.post("/logout", authRateLimiter, logout);
 
 router.get(
   "/me",

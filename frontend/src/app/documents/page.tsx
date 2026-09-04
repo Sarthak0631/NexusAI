@@ -10,6 +10,8 @@ import DocumentList from "@/components/documents/DocumentList";
 import { useAuth } from "@/context/AuthContext";
 import { DocumentItem } from "@/types/document";
 
+import { API_URL } from "../../services/api.config";
+
 export default function DocumentsPage() {
   const router = useRouter();
 
@@ -46,7 +48,7 @@ export default function DocumentsPage() {
       setError("");
 
       const response = await fetch(
-        "http://localhost:5000/api/documents",
+        `${API_URL}/documents`,
         {
           method: "GET",
           credentials: "include",
@@ -103,7 +105,7 @@ export default function DocumentsPage() {
       setError("");
 
       const response = await fetch(
-        `http://localhost:5000/api/documents/${id}`,
+        `${API_URL}/documents/${id}`,
         {
           method: "DELETE",
           credentials: "include",

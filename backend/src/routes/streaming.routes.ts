@@ -5,29 +5,27 @@ import {
 } from "../middleware/rate-limit.middleware";
 
 import {
-  validateQuestion,
-} from "../middleware/validation.middleware";
-
-import {
-  askAgent,
-} from "../controllers/agent.controller";
-
-import {
   authenticate,
 } from "../middleware/auth.middleware";
 
+import {
+  validateQuestion,
+  validateConversationId,
+} from "../middleware/validation.middleware";
 
-const router =
-  Router();
+import {
+  streamMultiAgentAnswer,
+} from "../controllers/streaming.controller";
 
+const router = Router();
 
 router.post(
   "/ask",
   aiRateLimiter,
   authenticate,
   validateQuestion,
-  askAgent
+  validateConversationId,
+  streamMultiAgentAnswer
 );
-
 
 export default router;

@@ -7,7 +7,9 @@ import {
 import { ChatGroq } from "@langchain/groq";
 import { z } from "zod";
 
-import { retrieveRelevantChunks } from "./retrieval.service";
+import {
+    retrieveAndRerankChunks,
+} from "./retrieval.service";
 
 import {
     createEmptyTokenUsage,
@@ -87,6 +89,11 @@ const MultiAgentState = Annotation.Root({
       only searches the current user's documents.
     */
     userId: Annotation<string>,
+
+    history: Annotation<string>({
+        reducer: (_, value) => value,
+        default: () => "",
+    }),
 
     /*
       Research Agent output
@@ -198,56 +205,59 @@ async function supervisorAgent(
         const response = await supervisorModel.invoke([
             new SystemMessage(
                 `
-You are the Supervisor Agent in a multi-agent
-research and knowledge system.
+                You are the Supervisor Agent in a multi-agent
+                research and knowledge system.
 
-Your job is to decide what the workflow should do next.
+                Your job is to decide what the workflow should do next.
 
-Available agents:
+                Available agents:
 
-1. research
-   - Searches the user's uploaded documents.
-   - Use this when information from the user's documents
-     may be required.
+                1. research
+                - Searches the user's uploaded documents.
+                - Use this when information from the user's documents
+                    may be required.
 
-2. summarizer
-   - Produces the final answer.
-   - Use this only when the workflow already has enough
-     information to answer the user's question.
+                2. summarizer
+                - Produces the final answer.
+                - Use this only when the workflow already has enough
+                    information to answer the user's question.
 
-For the initial request:
+                For the initial request:
 
-- If the question requires information from uploaded
-  documents, choose "research".
-- If sufficient information already exists in the workflow
-  state, choose "summarizer".
+                - If the question requires information from uploaded
+                documents, choose "research".
+                - If sufficient information already exists in the workflow
+                state, choose "summarizer".
 
-Return only the structured decision requested by the schema.
-        `.trim()
+                Return only the structured decision requested by the schema.
+                        `.trim()
             ),
 
             new HumanMessage(
                 `
-User Question:
-${state.question}
+                Previous Conversation:
+                ${state.history || "No previous conversation."}
 
-Current Research:
-${state.research || "No research available yet."}
+                User Question:
+                ${state.question}
 
-Current Analysis:
-${state.analysis || "No analysis available yet."}
+                Current Research:
+                ${state.research || "No research available yet."}
 
-Current Summary:
-${state.summary || "No summary available yet."}
+                Current Analysis:
+                ${state.analysis || "No analysis available yet."}
 
-Current Workflow State:
-- Research available: ${Boolean(state.research)}
-- Analysis available: ${Boolean(state.analysis)}
-- Summary available: ${Boolean(state.summary)}
+                Current Summary:
+                ${state.summary || "No summary available yet."}
 
-Decide the next agent.
-        `.trim()
-            ),
+                Current Workflow State:
+                - Research available: ${Boolean(state.research)}
+                - Analysis available: ${Boolean(state.analysis)}
+                - Summary available: ${Boolean(state.summary)}
+
+                Decide the next agent.
+                `
+            )
         ]);
 
         /*
@@ -329,9 +339,10 @@ async function researchAgent(
         */
 
         const chunks =
-            await retrieveRelevantChunks(
+            await retrieveAndRerankChunks(
                 state.question,
                 state.userId,
+                10,
                 3
             );
 
@@ -352,13 +363,31 @@ async function researchAgent(
           This prevents unnecessarily large prompts.
         */
 
-        const research = chunks
-            .map(
-                (chunk, index) =>
-                    `[Source ${index + 1}]
-${chunk.text.slice(0, 1200)}`
-            )
-            .join("\n\n");
+        const research =
+            chunks
+                .map(
+                    (chunk, index) =>
+                        `[Source ${index + 1}]
+                            Document: ${chunk.documentName ??
+                                                    "Unknown document"
+                                                    }
+
+                            Vector Score: ${chunk.vectorScore.toFixed(3)
+                                                    }
+
+                            Keyword Score: ${chunk.keywordScore.toFixed(3)
+                                                    }
+
+                            Rerank Score: ${chunk.rerankScore.toFixed(3)
+                                                    }
+
+                            Content:
+                            ${chunk.text.slice(
+                            0,
+                            1200
+                        )}`
+                )
+                .join("\n\n");
 
         console.log(
             `Research Agent: Found ${chunks.length} relevant chunks`
@@ -392,37 +421,46 @@ async function analystAgent(
         const response = await model.invoke([
             new SystemMessage(
                 `
-You are the Analyst Agent in a multi-agent
-research and knowledge system.
+                You are the Analyst Agent in a multi-agent
+                research and knowledge system.
 
-Your job is to analyze the information retrieved
-from the user's uploaded documents.
+                Your job is to analyze the information retrieved
+                from the user's uploaded documents.
 
-Instructions:
+                Instructions:
 
-- Carefully examine the research.
-- Identify information relevant to the user's question.
-- Remove irrelevant information.
-- Resolve contradictions when possible.
-- Do not invent facts.
-- Base your analysis only on the supplied research.
-- Explain what information should be used to answer
-  the user's question.
-        `.trim()
+                - Carefully examine the research.
+                - Identify information relevant to the user's question.
+                - Remove irrelevant information.
+                - Resolve contradictions when possible.
+                - Do not invent facts.
+                - Base your analysis only on the supplied research.
+                - Explain what information should be used to answer
+                the user's question.
+                `.trim()
             ),
 
             new HumanMessage(
                 `
-User Question:
-${state.question}
+                    Previous Conversation:
+                    ${state.history || "No previous conversation."}
 
-Research Results:
-${state.research || "No research was available."}
+                    Current User Question:
+                    ${state.question}
 
-Analyze the research and provide a concise,
-fact-based analysis.
-        `.trim()
-            ),
+                    Research Results:
+                    ${state.research || "No research was available."}
+
+                    Use the previous conversation only to understand
+                    the context of the current question.
+
+                    Analyze the research and provide a concise,
+                    fact-based analysis.
+
+                    Do not invent information that is not present
+                    in the research.
+                    `
+            )
         ]);
 
         const analysis =
@@ -480,40 +518,52 @@ async function summarizerAgent(
         const response = await model.invoke([
             new SystemMessage(
                 `
-You are the Final Summarizer Agent in a
-multi-agent research and knowledge system.
+                    You are the Final Summarizer Agent in a
+                    multi-agent research and knowledge system.
 
-Your job is to produce the final answer for the user.
+                    Your job is to produce the final answer for the user.
 
-Instructions:
+                    Instructions:
 
-- Answer the user's question directly.
-- Use the analyst's conclusions as the primary guide.
-- Use the research when necessary.
-- Do not invent information.
-- If the documents do not contain enough information,
-  clearly say so.
-- Keep the answer clear and useful.
-- Use a professional and natural tone.
-- Do not mention internal agents, LangGraph,
-  token usage, or workflow implementation.
-        `.trim()
+                    - Answer the user's question directly.
+                    - Use the analyst's conclusions as the primary guide.
+                    - Use the research when necessary.
+                    - Do not invent information.
+                    - If the documents do not contain enough information,
+                    clearly say so.
+                    - Keep the answer clear and useful.
+                    - Use a professional and natural tone.
+                    - Do not mention internal agents, LangGraph,
+                    token usage, or workflow implementation.
+            `.trim()
             ),
 
             new HumanMessage(
                 `
-User Question:
-${state.question}
+                Previous Conversation:
+                ${state.history || "No previous conversation."}
 
-Research:
-${state.research || "No research available."}
+                Current User Question:
+                ${state.question}
 
-Analysis:
-${state.analysis || "No analysis available."}
+                Research:
+                ${state.research || "No research available."}
 
-Generate the final answer for the user.
-        `.trim()
-            ),
+                Analysis:
+                ${state.analysis || "No analysis available."}
+
+                Generate the final answer for the current user question.
+
+                Use the previous conversation to understand references
+                such as "it", "they", "this", "that", or follow-up
+                questions.
+
+                However, always prioritize the current question
+                and the retrieved document information.
+
+                Do not invent facts.
+                `
+            )
         ]);
 
         const summary =
@@ -699,7 +749,8 @@ const multiAgentGraph =
 
 export async function runMultiAgent(
     question: string,
-    userId: string
+    userId: string,
+    history: string = ""
 ) {
     console.log(
         "\n========================================"
@@ -731,6 +782,8 @@ export async function runMultiAgent(
         await multiAgentGraph.invoke({
             question,
             userId,
+
+            history,
 
             research: "",
             analysis: "",

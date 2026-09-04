@@ -1,5 +1,5 @@
 import {
-  retrieveRelevantChunks,
+  retrieveAndRerankChunks,
   RetrievedChunk,
 } from "./retrieval.service";
 
@@ -18,10 +18,11 @@ export async function generateRAGResponse(
   userId: string
 ): Promise<RAGResponse> {
   // 1. Retrieve relevant document chunks
-  const relevantChunks = await retrieveRelevantChunks(
+  const relevantChunks = await retrieveAndRerankChunks(
     question,
     userId,
-    5
+    10,
+    3
   );
 
   // 2. Make sure we found something

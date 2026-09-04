@@ -28,7 +28,7 @@ export async function askAgent(
     if (
       !question ||
       typeof question !==
-        "string" ||
+      "string" ||
       !question.trim()
     ) {
       return res.status(400).json({
@@ -52,6 +52,11 @@ export async function askAgent(
         question.trim(),
       answer:
         result.answer,
+      route: result.route,
+      routeReason:
+        result.routeReason,
+      searchQuery:
+        result.searchQuery,
     });
 
   } catch (error) {

@@ -1,11 +1,16 @@
 import { generateEmbedding } from "./embedding.service";
 import { getPineconeIndex } from "./pinecone.service";
+import {
+  rerankChunks,
+  RerankedChunk,
+} from "./reranking.service";
 
 export interface RetrievedChunk {
   text: string;
   score: number;
   documentId: string;
   chunkIndex: number;
+  documentName?: string;
 }
 
 export async function retrieveRelevantChunks(
@@ -48,4 +53,29 @@ export async function retrieveRelevantChunks(
   }
 
   return results;
+}
+
+export async function retrieveAndRerankChunks(
+  query: string,
+  userId: string,
+  candidateK: number = 10,
+  finalK: number = 3
+): Promise<RerankedChunk[]> {
+  const candidates =
+    await retrieveRelevantChunks(
+      query,
+      userId,
+      candidateK
+    );
+
+  const reranked =
+    rerankChunks(
+      query,
+      candidates
+    );
+
+  return reranked.slice(
+    0,
+    finalK
+  );
 }

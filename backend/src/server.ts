@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 
 import healthRouter from "./routes/health.routes";
 import userRouter from "./routes/user.routes";
@@ -17,26 +18,71 @@ import ragChainRouter from "./routes/rag-chain.routes";
 import langGraphRouter from "./routes/langgraph.routes";
 import agentRouter from "./routes/agent.routes";
 import multiAgentRouter from "./routes/multi-agent.routes";
+import conversationRoutes from "./routes/conversation.routes";
+import streamingRoutes from "./routes/streaming.routes";
 
 import { connectDatabase } from "./config/database";
+
+import {
+  apiRateLimiter,
+} from "./middleware/rate-limit.middleware";
+
+import {
+  errorHandler,
+} from "./middleware/error.middleware";
 
 dotenv.config();
 
 const app = express();
+
+app.use(
+  helmet()
+);
 
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+    ],
     credentials: true,
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
   })
 );
 
-app.use(express.json());
+app.use(
+  express.json({
+    limit: "1mb",
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "1mb",
+  })
+);
 
 app.use(cookieParser());
+
+app.use(
+  "/api",
+  apiRateLimiter
+);
 
 // Routes
 app.get("/", (req, res) => {
@@ -87,6 +133,20 @@ app.use(
 app.use(
   "/api/multi-agent",
   multiAgentRouter
+);
+
+app.use(
+  "/api/conversations",
+  conversationRoutes
+);
+
+app.use(
+  "/api/streaming",
+  streamingRoutes
+);
+
+app.use(
+  errorHandler
 );
 
 // Start server

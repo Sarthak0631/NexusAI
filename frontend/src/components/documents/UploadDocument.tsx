@@ -2,6 +2,8 @@
 
 import { ChangeEvent, useRef, useState } from "react";
 
+import { API_URL } from "../../services/api.config";
+
 interface UploadDocumentProps {
   onUploadSuccess: () => void;
 }
@@ -99,7 +101,7 @@ export default function UploadDocument({
       );
 
       const response = await fetch(
-        "http://localhost:5000/api/documents/upload",
+        `${API_URL}/documents/upload`,
         {
           method: "POST",
           credentials: "include",

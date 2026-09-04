@@ -52,3 +52,31 @@ export async function generateAIResponse(
     usage: response.usage_metadata,
   };
 }
+
+export async function streamAIResponse(
+  messages: ChatMessage[]
+) {
+  const langChainMessages =
+    messages.map((message) => {
+      switch (message.role) {
+        case "system":
+          return new SystemMessage(
+            message.content
+          );
+
+        case "user":
+          return new HumanMessage(
+            message.content
+          );
+
+        case "assistant":
+          return new AIMessage(
+            message.content
+          );
+      }
+    });
+
+  return await llm.stream(
+    langChainMessages
+  );
+}
