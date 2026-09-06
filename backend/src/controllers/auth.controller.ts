@@ -168,7 +168,23 @@ export async function logout(
     req: Request,
     res: Response
 ) {
-    res.clearCookie("token");
+    /*
+        These options must mirror the ones used when the cookie was set.
+        A browser only removes a cookie when the clearing attributes match,
+        so omitting them leaves the session alive in production, where the
+        cookie is issued with sameSite "none" and secure true.
+    */
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure:
+            process.env.NODE_ENV ===
+            "production",
+        sameSite:
+            process.env.NODE_ENV ===
+                "production"
+                ? "none"
+                : "lax",
+    });
 
     return res.status(200).json({
         success: true,
