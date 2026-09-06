@@ -35,11 +35,42 @@ dotenv.config();
 
 const app = express();
 
+app.disable("x-powered-by");
+
 app.use(
   helmet()
 );
 
 const PORT = process.env.PORT || 5000;
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (
+      origin,
+      callback
+    ) => {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin)
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      callback(
+        new Error(
+          "Not allowed by CORS"
+        )
+      );
+    },
+    credentials: true,
+  })
+);
 
 // Middleware
 app.use(
@@ -148,6 +179,15 @@ app.use(
 app.use(
   errorHandler
 );
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "NexusAI backend is healthy",
+    environment:
+      process.env.NODE_ENV || "development",
+  });
+});
 
 // Start server
 async function startServer() {

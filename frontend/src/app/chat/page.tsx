@@ -14,8 +14,8 @@ import {
 
 import {
   createConversation,
-  getConversation,
   getConversations,
+  getConversationById,
   streamMultiAgentAnswer,
   getDocumentDetails,
 } from "../../services/conversation.service";
@@ -179,7 +179,7 @@ export default function ChatPage() {
       setError(null);
 
       const response =
-        await getConversation(
+        await getConversationById(
           conversationId
         );
 

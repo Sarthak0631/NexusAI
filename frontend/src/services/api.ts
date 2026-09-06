@@ -32,7 +32,7 @@ async function apiRequest(
 }
 
 export async function checkBackendHealth() {
-  return apiRequest("/api/health");
+  return apiRequest("/health");
 }
 
 export async function registerUser(data: {
@@ -40,7 +40,7 @@ export async function registerUser(data: {
   email: string;
   password: string;
 }) {
-  return apiRequest("/api/auth/register", {
+  return apiRequest("/auth/register", {
     method: "POST",
     body: data,
   });
@@ -50,18 +50,18 @@ export async function loginUser(data: {
   email: string;
   password: string;
 }) {
-  return apiRequest("/api/auth/login", {
+  return apiRequest("/auth/login", {
     method: "POST",
     body: data,
   });
 }
 
 export async function logoutUser() {
-  return apiRequest("/api/auth/logout", {
+  return apiRequest("/auth/logout", {
     method: "POST",
   });
 }
 
 export async function getCurrentUser() {
-  return apiRequest("/api/auth/me");
+  return apiRequest("/auth/me");
 }

@@ -4,91 +4,42 @@ import {
     MultiAgentResponse,
 } from "../types/chat";
 
+import { apiRequest } from "./api-client";
+
 import { API_URL } from "./api.config";
 
 export async function getConversations(): Promise<ConversationListResponse> {
-  try {
-    const response = await fetch(
-      `${API_URL}/conversations`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
-
-    const data =
-      await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message ||
-          `Failed to fetch conversations (${response.status})`
-      );
+  return apiRequest<ConversationListResponse>(
+    "/conversations",
+    {
+      method: "GET",
     }
-
-    return data;
-  } catch (error) {
-    console.error(
-      "getConversations API error:",
-      error
-    );
-
-    throw error;
-  }
+  );
 }
 
 export async function createConversation(
-    title: string = "New Conversation"
+  title: string = "New Conversation"
 ): Promise<ConversationResponse> {
-    const response = await fetch(
-        `${API_URL}/conversations`,
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({
-                title,
-            }),
-        }
-    );
-
-    const data =
-        await response.json();
-
-    if (!response.ok) {
-        throw new Error(
-            data.message ||
-            "Failed to create conversation"
-        );
+  return apiRequest<ConversationResponse>(
+    "/conversations",
+    {
+      method: "POST",
+      body: {
+        title,
+      },
     }
-
-    return data;
+  );
 }
 
-export async function getConversation(
-    conversationId: string
+export async function getConversationById(
+  conversationId: string
 ): Promise<ConversationResponse> {
-    const response = await fetch(
-        `${API_URL}/conversations/${conversationId}`,
-        {
-            method: "GET",
-            credentials: "include",
-        }
-    );
-
-    const data =
-        await response.json();
-
-    if (!response.ok) {
-        throw new Error(
-            data.message ||
-            "Failed to fetch conversation"
-        );
+  return apiRequest<ConversationResponse>(
+    `/conversations/${conversationId}`,
+    {
+      method: "GET",
     }
-
-    return data;
+  );
 }
 
 export async function askMultiAgent(

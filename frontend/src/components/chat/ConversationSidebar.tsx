@@ -50,8 +50,10 @@ export default function ConversationSidebar({
             Loading conversations...
           </div>
         ) : conversations.length === 0 ? (
-          <div className="px-2 py-4 text-sm leading-5 text-gray-500">
-            No conversations yet.
+          <div className="space-y-3">
+          <div className="h-10 animate-pulse rounded-lg bg-gray-100" />
+            <div className="h-10 animate-pulse rounded-lg bg-gray-100" />
+            <div className="h-10 animate-pulse rounded-lg bg-gray-100" />
           </div>
         ) : (
           <div className="space-y-1">

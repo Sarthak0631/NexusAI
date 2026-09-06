@@ -61,8 +61,20 @@ export async function uploadDocument(
       try {
         const pdfData = await parser.getText();
         extractedText = pdfData.text;
-      } finally {
-        await parser.destroy();
+      } catch (error: any) {
+        if (
+            error?.name === "PasswordException" ||
+            error?.code === 1 ||
+            error?.message?.toLowerCase().includes("password")
+          ) {
+            throw new Error(
+              "This PDF is password protected. Please upload an unlocked PDF."
+            );
+          }
+
+          throw error;
+        } finally {
+          await parser.destroy();
       }
     }
 
@@ -119,9 +131,14 @@ export async function uploadDocument(
   } catch (error) {
     console.error("Document ingestion error:", error);
 
+    const message =
+    error instanceof Error
+      ? error.message
+      : "Failed to process document";
+
     return res.status(500).json({
       success: false,
-      message: "Failed to process document",
+      message,
     });
   }
 }
