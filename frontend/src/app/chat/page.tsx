@@ -83,6 +83,12 @@ export default function ChatPage() {
     setLoadingDocument,
   ] = useState(false);
 
+  /* Conversation list collapses into a drawer below `lg`. */
+  const [
+    sidebarOpen,
+    setSidebarOpen,
+  ] = useState(false);
+
   /* =====================================================
      Load Conversations
   ===================================================== */
@@ -411,7 +417,7 @@ export default function ChatPage() {
   }
 
   return (
-    <main className="flex h-[100dvh] min-h-0 w-full overflow-hidden bg-white">
+    <main className="flex h-dvh min-h-0 w-full overflow-hidden bg-white">
       <ConversationSidebar
         conversations={conversations}
         activeConversationId={
@@ -425,6 +431,10 @@ export default function ChatPage() {
         }
         loading={
           loadingConversations
+        }
+        open={sidebarOpen}
+        onClose={() =>
+          setSidebarOpen(false)
         }
       />
 
@@ -443,6 +453,9 @@ export default function ChatPage() {
           }
           loading={loadingChat}
           title={activeTitle}
+          onMenuClick={() =>
+            setSidebarOpen(true)
+          }
         />
       </div>
 

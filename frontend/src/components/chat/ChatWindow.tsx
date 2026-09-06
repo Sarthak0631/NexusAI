@@ -20,6 +20,7 @@ interface ChatWindowProps {
     ) => void;
     loading: boolean;
     title: string;
+    onMenuClick?: () => void;
 }
 
 export default function ChatWindow({
@@ -28,6 +29,7 @@ export default function ChatWindow({
     onSourceClick,
     loading,
     title,
+    onMenuClick,
 }: ChatWindowProps) {
     const messagesEndRef =
         useRef<HTMLDivElement | null>(null);
@@ -44,7 +46,16 @@ export default function ChatWindow({
           Chat Header
       ===================================================== */}
 
-            <header className="flex shrink-0 items-center border-b border-gray-200 bg-white px-4 py-3 sm:px-6">
+            <header className="flex shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 sm:px-6">
+                {/* Conversation drawer toggle, mobile only */}
+                <button
+                    onClick={onMenuClick}
+                    aria-label="Open conversations"
+                    className="shrink-0 rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 lg:hidden"
+                >
+                    ☰
+                </button>
+
                 <div className="min-w-0">
                     <h1 className="truncate text-base font-semibold text-gray-900 sm:text-lg">
                         {title}

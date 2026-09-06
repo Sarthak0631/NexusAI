@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
+import mongoose from "mongoose";
 
 import healthRouter from "./routes/health.routes";
 import userRouter from "./routes/user.routes";
@@ -45,6 +46,7 @@ const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
   "http://localhost:3000",
+  "http://127.0.0.1:3000",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -68,17 +70,6 @@ app.use(
         )
       );
     },
-    credentials: true,
-  })
-);
-
-// Middleware
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-    ],
     credentials: true,
     methods: [
       "GET",
@@ -176,27 +167,38 @@ app.use(
   streamingRoutes
 );
 
-app.use(
-  errorHandler
-);
-
 app.get("/health", (_req, res) => {
   res.status(200).json({
     success: true,
     message: "NexusAI backend is healthy",
+    database:
+      mongoose.connection.readyState === 1
+        ? "connected"
+        : "disconnected",
     environment:
       process.env.NODE_ENV || "development",
   });
 });
 
+// Error handler must stay last so it can catch every route above it.
+app.use(
+  errorHandler
+);
+
 // Start server
 async function startServer() {
-  await connectDatabase();
+  const dbConnected = await connectDatabase();
 
   app.listen(PORT, () => {
     console.log(
       `NexusAI Backend running on http://localhost:${PORT}`
     );
+
+    if (!dbConnected) {
+      console.warn(
+        "Started without a database connection."
+      );
+    }
   });
 }
 

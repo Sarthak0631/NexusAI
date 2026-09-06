@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
@@ -10,14 +10,31 @@ export default function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
+  /*
+    On small screens the sidebar collapses into a drawer that slides in over
+    the content. From `lg` upwards it is always visible and this state is
+    ignored.
+  */
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50">
 
-      <Sidebar />
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() =>
+          setSidebarOpen(false)
+        }
+      />
 
-      <Navbar />
+      <Navbar
+        onMenuClick={() =>
+          setSidebarOpen(true)
+        }
+      />
 
-      <main className="ml-64 pt-16">
+      <main className="pt-16 lg:ml-64">
         {children}
       </main>
 

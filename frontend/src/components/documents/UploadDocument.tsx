@@ -143,7 +143,7 @@ export default function UploadDocument({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6">
 
       <div className="mb-5">
         <h2 className="text-lg font-semibold text-gray-900">
@@ -160,7 +160,7 @@ export default function UploadDocument({
         onClick={() =>
           inputRef.current?.click()
         }
-        className="cursor-pointer rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center transition hover:border-gray-400 hover:bg-white"
+        className="cursor-pointer rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center transition hover:border-indigo-400 hover:bg-white sm:px-6 sm:py-10"
       >
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white text-xl shadow-sm">
           ↑

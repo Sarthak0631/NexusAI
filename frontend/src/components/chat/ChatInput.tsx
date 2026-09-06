@@ -74,7 +74,7 @@ export default function ChatInput({
               disabled ||
               !message.trim()
             }
-            className="shrink-0 rounded-xl bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5"
+            className="shrink-0 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5"
           >
             {disabled
               ? "Thinking..."

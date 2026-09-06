@@ -47,7 +47,7 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
 
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
 
         {/* Welcome */}
         <div className="mb-8">
@@ -55,17 +55,17 @@ export default function DashboardPage() {
             Workspace Overview
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
-            Good evening, {user.name.split(" ")[0]} 👋
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+            Welcome back, {user.name.split(" ")[0]} 👋
           </h1>
 
-          <p className="mt-2 text-gray-500">
-            Here's what's happening with your NexusAI workspace.
+          <p className="mt-2 text-sm text-gray-500 sm:text-base">
+            Here&apos;s what&apos;s happening with your NexusAI workspace.
           </p>
         </div>
 
         {/* Stats */}
-        <div className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
 
           <StatCard
             title="Documents"
@@ -104,7 +104,7 @@ export default function DashboardPage() {
             Quick Actions
           </h2>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
             <button
               onClick={() => router.push("/chat")}

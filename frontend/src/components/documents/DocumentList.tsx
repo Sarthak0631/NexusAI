@@ -58,7 +58,7 @@ export default function DocumentList({
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
 
-      <div className="border-b border-gray-100 px-6 py-4">
+      <div className="border-b border-gray-100 px-4 py-4 sm:px-6">
         <h2 className="font-semibold text-gray-900">
           Your Documents
         </h2>
@@ -76,10 +76,10 @@ export default function DocumentList({
         {documents.map((document) => (
           <div
             key={document._id}
-            className="flex items-center justify-between gap-4 px-6 py-4 transition hover:bg-gray-50"
+            className="flex flex-col gap-3 px-4 py-4 transition hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6"
           >
 
-            <div className="flex min-w-0 items-center gap-4">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
 
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-xs font-bold uppercase">
                 {document.mimeType ===
@@ -114,7 +114,7 @@ export default function DocumentList({
 
             </div>
 
-            <div className="flex shrink-0 items-center gap-4">
+            <div className="flex shrink-0 items-center justify-between gap-3 pl-14 sm:justify-end sm:gap-4 sm:pl-0">
 
               <span
                 className={`rounded-full px-3 py-1 text-xs font-medium ${

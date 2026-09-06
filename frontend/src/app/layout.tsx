@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
@@ -6,6 +6,12 @@ import { AuthProvider } from "@/context/AuthContext";
 export const metadata: Metadata = {
   title: "NexusAI",
   description: "Intelligent Research & Knowledge Platform",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

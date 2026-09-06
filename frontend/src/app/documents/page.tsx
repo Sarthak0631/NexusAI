@@ -165,7 +165,7 @@ export default function DocumentsPage() {
   return (
     <DashboardLayout>
 
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
 
         {/* Header */}
         <div className="mb-8">
@@ -174,11 +174,11 @@ export default function DocumentsPage() {
             Knowledge Base
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
             Documents
           </h1>
 
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 sm:text-base">
             Upload and manage the documents
             NexusAI will use for intelligent
             answers.
