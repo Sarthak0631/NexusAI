@@ -26,6 +26,42 @@ export interface StreamingInput {
   research: string;
   analysis: string;
   history: string;
+
+  /*
+    Names of the documents the user scoped
+    the question to. Empty means the whole
+    knowledge base was searched.
+  */
+  scopedDocumentNames?: string[];
+}
+
+function buildScopeRules(
+  scopedDocumentNames?: string[]
+) {
+  if (
+    !scopedDocumentNames ||
+    scopedDocumentNames.length === 0
+  ) {
+    return "";
+  }
+
+  return `
+
+The user restricted this question to the
+following document(s):
+
+${scopedDocumentNames
+      .map((name) => `- ${name}`)
+      .join("\n")}
+
+Additional rules for this answer:
+
+- Answer only from the research above,
+  which comes from those documents.
+- Do not use outside or general knowledge.
+- If the documents do not contain the
+  answer, say that the selected document(s)
+  do not cover it instead of guessing.`;
 }
 
 export async function streamFinalAnswer(
@@ -58,6 +94,7 @@ Important rules:
 - Do not mention internal agents,
   LangGraph, token tracking, or
   implementation details.
+${buildScopeRules(input.scopedDocumentNames)}
         `.trim()
       ),
 

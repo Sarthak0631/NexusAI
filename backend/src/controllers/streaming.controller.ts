@@ -20,6 +20,10 @@ import {
     buildSourceReferences,
 } from "../services/source.service";
 
+import mongoose from "mongoose";
+
+import DocumentModel from "../models/Document";
+
 export async function streamMultiAgentAnswer(
     req: Request,
     res: Response
@@ -59,6 +63,64 @@ export async function streamMultiAgentAnswer(
                     "conversationId is required",
             });
         }
+
+        /*
+          Optional: restrict the answer to a
+          subset of the user's documents.
+        */
+
+        const requestedDocumentIds =
+            Array.isArray(req.body?.documentIds)
+                ? req.body.documentIds
+                    .filter(
+                        (id: unknown): id is string =>
+                            typeof id === "string" &&
+                            mongoose.Types.ObjectId.isValid(
+                                id
+                            )
+                    )
+                    .slice(0, 20)
+                : [];
+
+        /*
+          Only keep documents that actually
+          belong to the authenticated user.
+        */
+
+        const scopedDocuments =
+            requestedDocumentIds.length > 0
+                ? await DocumentModel.find({
+                    _id: {
+                        $in: requestedDocumentIds,
+                    },
+                    userId,
+                })
+                    .select("_id originalName name")
+                    .lean()
+                : [];
+
+        if (
+            requestedDocumentIds.length > 0 &&
+            scopedDocuments.length === 0
+        ) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Selected document(s) not found",
+            });
+        }
+
+        const scopedDocumentIds =
+            scopedDocuments.map((document) =>
+                document._id.toString()
+            );
+
+        const scopedDocumentNames =
+            scopedDocuments.map(
+                (document) =>
+                    document.originalName ??
+                    document.name
+            );
 
         /*
           Verify that the conversation belongs
@@ -104,7 +166,8 @@ export async function streamMultiAgentAnswer(
                 question,
                 userId,
                 10,
-                3
+                3,
+                scopedDocumentIds
             );
 
         const sources =
@@ -140,7 +203,9 @@ export async function streamMultiAgentAnswer(
 
         const analysis =
             research ||
-            "No relevant information was found in the uploaded documents.";
+            (scopedDocumentNames.length > 0
+                ? "No relevant information was found in the selected document(s)."
+                : "No relevant information was found in the uploaded documents.");
 
         /*
           Configure Server-Sent Events.
@@ -187,6 +252,7 @@ export async function streamMultiAgentAnswer(
                 research,
                 analysis,
                 history,
+                scopedDocumentNames,
             },
             (chunk) => {
                 fullAnswer += chunk;

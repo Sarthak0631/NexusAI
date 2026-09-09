@@ -20,6 +20,10 @@ import {
   getDocumentDetails,
 } from "../../services/conversation.service";
 
+import { getDocuments } from "../../services/document.service";
+
+import { DocumentItem } from "../../types/document";
+
 import ConversationSidebar from "../../components/chat/ConversationSidebar";
 import ChatWindow from "../../components/chat/ChatWindow";
 import DocumentViewer from "../../components/chat/DocumentViewer";
@@ -89,13 +93,55 @@ export default function ChatPage() {
     setSidebarOpen,
   ] = useState(false);
 
+  /*
+    Documents available for scoping a
+    question. An empty selection means the
+    whole knowledge base is searched.
+  */
+
+  const [
+    documents,
+    setDocuments,
+  ] = useState<DocumentItem[]>([]);
+
+  const [
+    loadingDocuments,
+    setLoadingDocuments,
+  ] = useState(true);
+
+  const [
+    selectedDocumentIds,
+    setSelectedDocumentIds,
+  ] = useState<string[]>([]);
+
   /* =====================================================
      Load Conversations
   ===================================================== */
 
   useEffect(() => {
     loadConversations();
+    loadDocuments();
   }, []);
+
+  async function loadDocuments() {
+    try {
+      setLoadingDocuments(true);
+
+      const response =
+        await getDocuments();
+
+      setDocuments(
+        response.documents ?? []
+      );
+    } catch (error) {
+      console.error(
+        "Failed to load documents:",
+        error
+      );
+    } finally {
+      setLoadingDocuments(false);
+    }
+  }
 
   async function handleSourceClick(
     source: SourceReference
@@ -384,7 +430,8 @@ export default function ChatPage() {
               error
             );
           }
-        }
+        },
+        selectedDocumentIds
       );
     } catch (error) {
       console.error(
@@ -455,6 +502,16 @@ export default function ChatPage() {
           title={activeTitle}
           onMenuClick={() =>
             setSidebarOpen(true)
+          }
+          documents={documents}
+          selectedDocumentIds={
+            selectedDocumentIds
+          }
+          onSelectedDocumentsChange={
+            setSelectedDocumentIds
+          }
+          loadingDocuments={
+            loadingDocuments
           }
         />
       </div>

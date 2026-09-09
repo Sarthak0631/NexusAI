@@ -2,17 +2,23 @@
 
 import {
   FormEvent,
+  ReactNode,
   useState,
 } from "react";
 
 interface ChatInputProps {
   onSend: (message: string) => Promise<void>;
   disabled?: boolean;
+  /* Rendered above the textarea, e.g. the document scope picker. */
+  toolbar?: ReactNode;
+  placeholder?: string;
 }
 
 export default function ChatInput({
   onSend,
   disabled = false,
+  toolbar,
+  placeholder = "Ask anything about your documents...",
 }: ChatInputProps) {
   const [message, setMessage] =
     useState("");
@@ -43,6 +49,12 @@ export default function ChatInput({
       className="border-t border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4"
     >
       <div className="mx-auto w-full max-w-5xl">
+        {toolbar && (
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {toolbar}
+          </div>
+        )}
+
         <div className="flex items-end gap-2 sm:gap-3">
           <textarea
             value={message}
@@ -62,7 +74,7 @@ export default function ChatInput({
                 form?.requestSubmit();
               }
             }}
-            placeholder="Ask anything about your documents..."
+            placeholder={placeholder}
             disabled={disabled}
             rows={1}
             className="min-h-[48px] max-h-32 flex-1 resize-none rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-500 focus:ring-1 focus:ring-gray-300 disabled:cursor-not-allowed disabled:bg-gray-100"

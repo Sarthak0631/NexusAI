@@ -7,8 +7,11 @@ import {
     SourceReference,
 } from "../../types/chat";
 
+import { DocumentItem } from "../../types/document";
+
 import ChatMessageComponent from "./ChatMessage";
 import ChatInput from "./ChatInput";
+import DocumentSelector from "./DocumentSelector";
 
 interface ChatWindowProps {
     messages: ChatMessage[];
@@ -21,6 +24,13 @@ interface ChatWindowProps {
     loading: boolean;
     title: string;
     onMenuClick?: () => void;
+
+    documents: DocumentItem[];
+    selectedDocumentIds: string[];
+    onSelectedDocumentsChange: (
+        documentIds: string[]
+    ) => void;
+    loadingDocuments?: boolean;
 }
 
 export default function ChatWindow({
@@ -30,6 +40,10 @@ export default function ChatWindow({
     loading,
     title,
     onMenuClick,
+    documents,
+    selectedDocumentIds,
+    onSelectedDocumentsChange,
+    loadingDocuments = false,
 }: ChatWindowProps) {
     const messagesEndRef =
         useRef<HTMLDivElement | null>(null);
@@ -146,6 +160,32 @@ export default function ChatWindow({
                 <ChatInput
                     onSend={onSend}
                     disabled={loading}
+                    placeholder={
+                        selectedDocumentIds.length > 0
+                            ? "Ask about the selected document(s)..."
+                            : "Ask anything about your documents..."
+                    }
+                    toolbar={
+                        <>
+                            <DocumentSelector
+                                documents={documents}
+                                selectedDocumentIds={
+                                    selectedDocumentIds
+                                }
+                                onChange={
+                                    onSelectedDocumentsChange
+                                }
+                                loading={loadingDocuments}
+                                disabled={loading}
+                            />
+
+                            <span className="text-xs text-gray-400">
+                                {selectedDocumentIds.length > 0
+                                    ? "Answers are limited to the selected document(s)."
+                                    : "Searching your whole knowledge base."}
+                            </span>
+                        </>
+                    }
                 />
             </div>
         </section>

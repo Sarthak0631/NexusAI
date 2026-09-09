@@ -16,7 +16,8 @@ export interface RetrievedChunk {
 export async function retrieveRelevantChunks(
   query: string,
   userId: string,
-  topK: number = 5
+  topK: number = 5,
+  documentIds?: string[]
 ): Promise<RetrievedChunk[]> {
   // 1. Convert the user's question into an embedding
   const queryEmbedding = await generateEmbedding(query);
@@ -27,11 +28,21 @@ export async function retrieveRelevantChunks(
   // 3. Use the user's namespace
   const namespace = index.namespace(`user_${userId}`);
 
-  // 4. Search for similar vectors
+  // 4. Search for similar vectors, optionally
+  //    restricted to the selected documents
   const searchResult = await namespace.query({
     vector: queryEmbedding,
     topK,
     includeMetadata: true,
+    ...(documentIds && documentIds.length > 0
+      ? {
+          filter: {
+            documentId: {
+              $in: documentIds,
+            },
+          },
+        }
+      : {}),
   });
 
   // 5. Convert Pinecone results into our application format
@@ -59,13 +70,15 @@ export async function retrieveAndRerankChunks(
   query: string,
   userId: string,
   candidateK: number = 10,
-  finalK: number = 3
+  finalK: number = 3,
+  documentIds?: string[]
 ): Promise<RerankedChunk[]> {
   const candidates =
     await retrieveRelevantChunks(
       query,
       userId,
-      candidateK
+      candidateK,
+      documentIds
     );
 
   const reranked =

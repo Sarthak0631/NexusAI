@@ -80,7 +80,12 @@ export async function streamMultiAgentAnswer(
     onChunk: (chunk: string) => void,
     onComplete?: (
         sources?: import("../types/chat").SourceReference[]
-    ) => void
+    ) => void,
+    /*
+      When provided, the backend only searches
+      these documents and answers from them.
+    */
+    documentIds?: string[]
 ) {
     const response = await fetch(
         `${API_URL}/streaming/ask`,
@@ -93,6 +98,11 @@ export async function streamMultiAgentAnswer(
             body: JSON.stringify({
                 conversationId,
                 question,
+                documentIds:
+                    documentIds &&
+                        documentIds.length > 0
+                        ? documentIds
+                        : undefined,
             }),
         }
     );
