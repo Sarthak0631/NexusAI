@@ -38,6 +38,23 @@ const app = express();
 
 app.disable("x-powered-by");
 
+/*
+  Render, Vercel and most other hosts put the
+  app behind a reverse proxy, so the socket
+  address is the proxy's, not the visitor's.
+
+  Without this, every request looks like it
+  comes from one IP and the rate limiters
+  below throttle all users as a single client.
+
+  1 means "trust one proxy hop". Do not use
+  `true` here: express-rate-limit rejects it
+  as permissive, because a client could then
+  spoof X-Forwarded-For to dodge the limit.
+*/
+
+app.set("trust proxy", 1);
+
 app.use(
   helmet()
 );
