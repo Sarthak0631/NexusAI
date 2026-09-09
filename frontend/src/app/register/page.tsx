@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
+import PasswordEyeIcon from "@/components/auth/PasswordEyeIcon";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,6 +16,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] =
     useState("");
+
+  const [showPassword, setShowPassword] =
+    useState(false);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -132,19 +136,45 @@ export default function RegisterPage() {
                 Password
               </label>
 
-              <input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
-                required
-                minLength={6}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                placeholder="Create a password"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
+                  required
+                  minLength={6}
+                  className="w-full rounded-lg border border-gray-300 py-3 pl-4 pr-12 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  placeholder="Create a password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(
+                      (current) => !current
+                    )
+                  }
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                  aria-pressed={showPassword}
+                  className="absolute inset-y-0 right-0 flex items-center rounded-r-lg px-3 text-gray-400 transition hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-100"
+                >
+                  <PasswordEyeIcon
+                    visible={showPassword}
+                  />
+                </button>
+              </div>
 
               <p className="mt-2 text-xs text-gray-500">
                 At least 6 characters.
