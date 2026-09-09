@@ -73,51 +73,8 @@ still loads; routes that need the database will return errors until it connects.
 | --- | --- |
 | `NEXT_PUBLIC_API_URL` | Backend API base, including the `/api` suffix |
 
-## Deploying for free
+## Deploying
 
-Deploy the backend first, so you have its URL when configuring the frontend.
-
-### 1. Backend — Render (free tier)
-
-New Web Service → connect this repo, then:
-
-| Setting | Value |
-| --- | --- |
-| Root directory | `backend` |
-| Build command | `npm install && npm run build` |
-| Start command | `npm start` |
-
-Add every variable from the backend table above, plus:
-
-- `NODE_ENV=production`
-- `FRONTEND_URL` — the Vercel URL, added after step 2
-
-Leave `PORT` unset; Render assigns it and the server already reads it.
-
-### 2. Frontend — Vercel (free tier)
-
-Import the repo, set **Root Directory** to `frontend`, and add:
-
-- `NEXT_PUBLIC_API_URL=https://<your-render-service>.onrender.com/api`
-
-Then go back to Render and set `FRONTEND_URL` to the Vercel URL.
-
-### 3. Database
-
-Keep the Atlas free tier. `0.0.0.0/0` must stay on the access list, because
-neither free tier offers a static egress IP to whitelist instead.
-
-### Why the two URLs must be exact
-
-Auth is a cookie issued by the backend and sent from a different domain, so the
-cookie is cross-site. In production the server issues it with `secure: true` and
-`sameSite: "none"`, which browsers only accept over HTTPS — both platforms
-provide that automatically. The request must also pass CORS with credentials,
-and that check compares the browser's `Origin` against `FRONTEND_URL` exactly:
-a trailing slash, `http` instead of `https`, or the `www.` prefix will fail.
-
-The symptom of a mismatch is login appearing to succeed and every following
-request returning 401, because the cookie was never stored.
-
-> Free Render services sleep when idle, so the first request after a pause can
-> take up to a minute.
+Render for the backend, Vercel for the frontend, both on free tiers. The full
+walkthrough — settings, environment variables, verification order and what the
+free tiers actually feel like — is in **[DEPLOYMENT.md](DEPLOYMENT.md)**.
